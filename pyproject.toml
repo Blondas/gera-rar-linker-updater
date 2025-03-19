@@ -1,0 +1,26 @@
+[project]
+name = "gera-rar-linker-updater"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Krzysiek Nowakowski",email = "knowakowski@pm.me"}
+]
+readme = "README.md"
+requires-python = "^3.9.19"
+dependencies = [
+]
+
+[tool.poetry]
+packages = [
+    {include = "linker_updater"}
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[tool.poetry.scripts]
+linker-updater = "linker_updater.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
