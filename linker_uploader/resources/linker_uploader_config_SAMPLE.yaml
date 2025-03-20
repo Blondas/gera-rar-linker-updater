@@ -1,0 +1,16 @@
+db_config:
+    database: "database"
+    user: "user"
+    password: "password"
+    
+linker_config:
+    agid_name_lookup_table: "agid_name_lookup_table"
+    
+uploader_config:
+    verify_ssl: true
+    s3_bucket: "s3_bucket"
+    s3_prefix: "s3_prefix"
+
+src_directory_prefix: "src_directory_prefix"
+payload_mapping_table: "payload_mapping_table"
+output_working_directory: "output_working_directory"

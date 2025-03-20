@@ -4,7 +4,7 @@ from typing import Generator, Optional, Dict
 from ibm_db_dbi import connect, Connection, Error as DB2Error
 import logging
 
-from unit_of_work.db2.db_connection import DBConnection
+from linker_uploader.db2.db_connection import DBConnection
 
 logger = logging.getLogger(__name__)
 
