@@ -7,9 +7,16 @@ DBNAME="DBNAME"
 TABLE_NAME="your_table_name"
 PYTHON_MODULE="linker_uploader"
 
+export DB@DBDFT=$DBNAME
 
+# Connect to the database
 db2 connect to $DBNAME
+if [$? -ne 0]; then
+    echo "Error connecting to the database."
+    exit 1
+fi
 
+# Run the query
 SQL_QUERY="SELECT
     src_tsm_server_name,
     src_tsm_filespace_name,
@@ -17,7 +24,15 @@ SQL_QUERY="SELECT
     status,
     dst_agid_name
 FROM $TABLE_NAME limit 1"
-readarray -t QUERY_RESULTS < <(db2 -x "$SQL_QUERY")
+
+QUERY_RESULT=$(db2 -x "$SQL_QUERY" 2>&1)
+if [ $? -ne 0 ]; then
+    echo "DB2 Error: $QUERY_RESULT"
+    db2 terminate
+    exit 1
+fi
+
+readarray -t QUERY_RESULTS <<< "$DB2_OUTPUT"
 if [ ${#RESULTS[@]} -eq 0 ]; then
     echo "No results returned or an error occurred."
     db2 terminate
