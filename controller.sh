@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SRC_DIR_PREFIX="foo/bar"
+OUTPUT_DIR="foo/bar"
+
 DBNAME="DBNAME"
 TABLE_NAME="your_table_name"
 PYTHON_MODULE="linker_uploader"
@@ -37,11 +40,13 @@ do
         read -r src_tsm_server_name src_tsm_filespace_name scr_tsm_btch_filename status dst_agid_name <<< "$row"
 
         python -m $PYTHON_MODULE \
-            --server "$src_tsm_server_name" \
-            --filespace "$src_tsm_filespace_name" \
-            --filename "$scr_tsm_btch_filename" \
-            --status "$status" \
-            --destination "$dst_agid_name"
+            --src-directory-prefix $SRC_DIR_PREFIX \
+            --output-directory $OUTPUT_DIR \
+            --db-src-tsm-server-name "$src_tsm_server_name" \
+            --db-src-tsm-filespace-name "$src_tsm_filespace_name" \
+            --db-src-tsm-batch-filename "$scr_tsm_btch_filename" \
+            --db-status "$status" \
+            --dst-agid-name "$dst_agid_name"
 
         if [ $? -ne 0 ]; then
             echo "Error running Python module for row: $row"
