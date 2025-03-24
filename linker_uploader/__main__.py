@@ -1,45 +1,52 @@
 import argparse
-
-from linker_uploader.config.linker_uploader_config import LinkerUploaderConfig, load_config
 from linker_uploader.logger.logger_config import configured_logger as logger
-from linker_uploader.mapping.mapper import Mapper
-from linker_uploader.mapping.mapper_impl import MapperImpl
-from linker_uploader.db2.db_connection import DBConnection
-from linker_uploader.db2.db2_connection_impl import DB2ConnectionImpl
+from pathlib import Path
+
+from linker_uploader.mapping.batch_status import BatchStatus
 from linker_uploader.mapping.mapping_entry import MappingEntry
 from linker_uploader.linker.linker import Linker
 from linker_uploader.linker.linker_impl import LinkerImpl
 from linker_uploader.processor.ProcessorImpl import ProcessorImpl
 
 
-# def parse_args():
-#     parser = argparse.ArgumentParser(description='TODO')
-#     parser.add_argument('--tape-name', type=str, required=True, help='Tape Name (vTapeFile)')
-#     return parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser(description='TODO')
+    parser.add_argument('--src-directory-prefix', type=str, required=True, help='Source directory')
+    parser.add_argument('--output-directory-', type=str, required=True, help='Output working directory')
+    parser.add_argument('--db-src-tsm-server-name', type=str, required=True, help='vmigpayld_mapping.src_tsm_server_name')
+    parser.add_argument('--db-src-tsm-filespace-name', type=str, required=True, help='vmigpayld_mapping.src_tsm_filespace_name')
+    parser.add_argument('--db-src-tsm-batch-filename', type=str, required=True, help='vmigpayld_mapping.src_tsm_batch_filename')
+    parser.add_argument('--db-status', type=str, required=True, help='vmigpayld_mapping.status')
+    parser.add_argument('--dst-agid-name', type=str, required=True, help='vmigpayld_mapping.dst_agid_name')
+    return parser.parse_args()
 
 def main():
     try:
-        # args = parse_args()
-        config: LinkerUploaderConfig = load_config()
-        logger.debug(f"config: {config}")
-    
-        #get mappings
-        db2_connection: DBConnection = DB2ConnectionImpl(
-            database=config.db_config.database,
-            user=config.db_config.user,
-            password=config.db_config.password
-        )
-        mapper: Mapper = MapperImpl(db2_connection, config.payload_mapping_table)
-        mappings: list[MappingEntry] = mapper.get_mappings()
-        logger.debug(f"mappings: {mappings}")
+        args = parse_args()
+        
+        #config
+        output_working_directory: Path = Path(args.output_directory)
+        src_directory_prefix: Path = Path(args.src_directory_prefix)
+        
+        # db row
+        db_src_tsm_server_name: str = args.db_src_tsm_server_name
+        db_src_tsm_filespace_name: str = args.db_src_tsm_filespace_name
+        db_src_tsm_batch_filename: Path = Path(args.db_src_tsm_batch_filename)
+        db_status: str = args.db_status
+        db_dst_agid_name: str = args.db_dst_agid_name
         
         linker: Linker = LinkerImpl()
-        for mapping in mappings:
-            ProcessorImpl(
-                src_dir_prefix_path=config.src_directory_prefix,
-                working_dir=config.output_working_directory,
-                linker=linker,
-            ).process(mapping)
+        ProcessorImpl(
+            src_dir_prefix_path=src_directory_prefix,
+            working_dir=output_working_directory,
+            linker=linker,
+        ).process(MappingEntry(
+            src_server_name=db_src_tsm_server_name,
+            src_filespace_name=db_src_tsm_filespace_name,
+            src_batch_filename=db_src_tsm_batch_filename,
+            status=BatchStatus[db_status],
+            dst_agid_name=db_dst_agid_name
+        ))
             
     except Exception as e:
         logger.error(f"An error occurred: {e}")
